@@ -14,7 +14,7 @@
 #include "signal.hpp"
 #include "utils.hpp"
 
-int setupSocket(const Settings &settings) {
+static int setupSocket(const Settings &settings) {
     const int sock = socket(AF_INET, settings.mode == UDP ? SOCK_DGRAM : SOCK_STREAM, 0);
 
     if (sock < 0) {
