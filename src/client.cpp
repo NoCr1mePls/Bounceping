@@ -22,12 +22,6 @@ static int setupSocket(const Settings &settings) {
         exit(-1);
     }
 
-    constexpr int flags = SOF_TIMESTAMPING_RX_SOFTWARE;
-    if (setsockopt(sock, SOL_SOCKET, SO_TIMESTAMPING, &flags, sizeof(flags)) < 0) {
-        std::cerr << "Error setting SO_TIMESTAMPING" << std::endl;
-        exit(-1);
-    }
-
     constexpr int busy_poll_interval = 50;
     if (setsockopt(sock, SOL_SOCKET, SO_BUSY_POLL, &busy_poll_interval, sizeof(busy_poll_interval)) < 0) {
         std::cerr << "Error setting SO_BUSY_POLL" << std::endl;
