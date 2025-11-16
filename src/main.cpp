@@ -9,22 +9,28 @@
 #include "settings.hpp"
 #include "utils.hpp"
 
-std::optional<int> getCommandLineOptions(Settings& settings, int argc, char* argv[]) {
+std::optional<int> getCommandLineOptions(Settings& settings, const int argc, char* argv[]) {
     if (argc <= 1) {
         printHelp();
         return 0;
     }
     const bool isServer = toLowerCase(argv[1]) == "server";
 
+    settings.isServer = isServer;
+
     const std::string flags = isServer ? "hp:m:" : "hp:H:c:s:t:b:i:o:T:";
 
     if (!isServer) {
         if (validateIpAddress(argv[1])) {
             settings.ip = argv[1];
+        } else {
+            std::cerr << argv[1] << " is not a valid IP address" << std::endl;
+            return -1;
         }
     }
 
-    while (const int opt = getopt(argc - 1, argv + 1, flags.c_str()) != -1) {
+    int opt;
+    while ((opt = getopt(argc - 1, argv + 1, flags.c_str())) != -1) {
         switch (opt) {
             case '?':
             case 'h': {
@@ -36,6 +42,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, int argc, char* arg
                     settings.port = port;
                 } else {
                     std::cerr << optarg << " is not a valid port" << std::endl;
+                    return -1;
                 }
                 break;
             }
@@ -44,6 +51,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, int argc, char* arg
                     settings.hops = hops;
                 } else {
                     std::cerr << optarg << " is not a valid number of hops" << std::endl;
+                    return -1;
                 }
                 break;
             }
@@ -52,6 +60,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, int argc, char* arg
                     settings.count = count;
                 } else {
                     std::cerr << optarg << " is not a valid count" << std::endl;
+                    return -1;
                 }
                 break;
             }
@@ -60,6 +69,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, int argc, char* arg
                     settings.size = size;
                 } else {
                     std::cerr << optarg << " is not a valid size" << std::endl;
+                    return -1;
                 }
                 break;
             }
@@ -68,6 +78,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, int argc, char* arg
                     settings.tests = tests;
                 } else {
                     std::cerr << optarg << " is not a valid number of tests" << std::endl;
+                    return -1;
                 }
                 break;
             }
@@ -76,6 +87,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, int argc, char* arg
                     settings.batches = batch;
                 } else {
                     std::cerr << optarg << " is not a valid number of batches" << std::endl;
+                    return -1;
                 }
                 break;
             }
@@ -84,6 +96,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, int argc, char* arg
                     settings.interval = interval;
                 } else {
                     std::cerr << optarg << " is not a valid interval" << std::endl;
+                    return -1;
                 }
                 break;
             }
@@ -92,6 +105,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, int argc, char* arg
                     settings.output = optarg;
                 } else {
                     std::cerr << optarg << " is not a valid output file" << std::endl;
+                    return -1;
                 }
                 break;
             }
@@ -100,6 +114,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, int argc, char* arg
                     settings.threshold = threshold;
                 } else {
                     std::cerr << optarg << " is not a valid threshold" << std::endl;
+                    return -1;
                 }
                 break;
             }
@@ -112,12 +127,13 @@ std::optional<int> getCommandLineOptions(Settings& settings, int argc, char* arg
                     settings.mode = TCP_STREAM;
                 } else {
                     std::cerr << optarg << " is not a valid mode" << std::endl;
+                    return -1;
                 }
                 break;
             }
             default:
                 std::cerr << "Unknown option: " << static_cast<char>(optopt) << "\n";
-                break;
+                return -1;
         }
     }
     return std::nullopt;
@@ -138,7 +154,11 @@ int main(const int argc, char *argv[]) {
         return thrSrvResult.value();
     }
 
-    if (const std::optional<int> thrCliResult = setupThread(pthread_self()); thrCliResult.has_value()) {
-        return thrCliResult.value();
+    if (!settings.isServer) {
+        if (const std::optional<int> thrCliResult = setupThread(pthread_self()); thrCliResult.has_value()) {
+            return thrCliResult.value();
+        }
     }
+
+    server.join();
 }

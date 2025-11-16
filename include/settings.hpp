@@ -20,6 +20,7 @@ struct Settings {
     std::string output;
     int threshold = -1;
     std::string ip;
+    bool isServer = false;
 };
 
 void printHelp();

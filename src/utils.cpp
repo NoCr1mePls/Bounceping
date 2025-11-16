@@ -36,6 +36,7 @@ std::optional<int> setupThread(const pthread_t& thread) {
 
     if (pthread_setschedparam(thread, SCHED_FIFO, &sch_params) != 0) {
         std::cerr << "Error setting thread priority" << std::endl;
+        std::cerr << "Make sure to run with sudo!" << std::endl;
         return -1;
     }
 
@@ -45,7 +46,8 @@ std::optional<int> setupThread(const pthread_t& thread) {
 
     if (pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpu_set) != 0) {
         std::cerr << "Error setting thread affinity" << std::endl;
-        return 01;
+        std::cerr << "Make sure to run with sudo!" << std::endl;
+        return -1;
     }
 
     return std::nullopt;
@@ -54,6 +56,7 @@ std::optional<int> setupThread(const pthread_t& thread) {
 bool lockMemory() {
     if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0) {
         std::cerr << "Error locking memory" << std::endl;
+        std::cerr << "Make sure to run with sudo!" << std::endl;
         return false;
     }
     return true;
