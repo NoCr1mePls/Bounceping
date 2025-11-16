@@ -1,7 +1,7 @@
 # installation
 First clone this GitHub repository to your local machine.
 You can then run the following to install the tool.
-```shell
+```sh
 mkdir build
 cd build
 cmake ..
