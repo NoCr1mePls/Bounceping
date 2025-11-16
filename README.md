@@ -1,4 +1,13 @@
 # installation
+First clone this GitHub repository to your local machine.
+You can then run the following to install the tool.
+```shell
+mkdir build
+cd build
+cmake ..
+cmake --build .
+sudo cmake --install .
+```
 
 # Protocol
 The protocol is the following data packed together is bytes (this is done for easy of processing and performance reasons.)

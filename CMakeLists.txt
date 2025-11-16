@@ -15,3 +15,5 @@ add_executable(bounceping src/main.cpp
         include/protocol.hpp)
 
 include_directories(include)
+
+install(TARGETS bounceping RUNTIME DESTINATION bin)
