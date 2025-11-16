@@ -104,7 +104,7 @@ void runClient(const Settings &settings) {
                 if (protocol.hops <= 1) {
                     uint64_t timeDifference = 0;
                     if (protocol.hops == 1) {
-                        timeDifference = ts->tv_sec * 1000000 + ts->tv_nsec / 1000 - protocol.timestamp;
+                        timeDifference = ts - protocol.timestamp;
                     } else {
                         timeDifference += protocol.timestamp;
                     }

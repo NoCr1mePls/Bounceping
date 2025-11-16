@@ -9,6 +9,6 @@ struct Protocol {
 
 struct Message {
     Protocol protocol;
-    const timespec* timestamp;
+    uint64_t timestamp;
     sockaddr_in sender;
 };

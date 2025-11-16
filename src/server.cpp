@@ -36,13 +36,13 @@ static int setupSocket(const Settings& settings) {
     addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(sock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) != 0) {
-        std::cerr << "Error on binding" << std::endl;
+        std::cerr << "Error on binding: " << strerror(errno)  << std::endl;
         exit(-1);
     }
 
     if (settings.mode != UDP) {
         if (listen(sock, SOMAXCONN)) {
-            std::cerr << "Error listening for UDP connection" << std::endl;
+            std::cerr << "Error listening for UDP connection: " << strerror(errno) << std::endl;
             exit(-1);
         }
     }
@@ -53,24 +53,48 @@ static int setupSocket(const Settings& settings) {
 }
 
 void runServer(const Settings &settings) {
-    int sock, clientSock = 0;
+    int sock = 0;
 
     if (settings.mode != TCP) {
         sock = setupSocket(settings);
         if (settings.mode == TCP_STREAM) {
-            clientSock = accept(sock, nullptr, nullptr);
+            sock = accept(sock, nullptr, nullptr);
+
+            constexpr int flags = SOF_TIMESTAMPING_RX_SOFTWARE;
+            if (setsockopt(sock, SOL_SOCKET, SO_TIMESTAMPING, &flags, sizeof(flags)) < 0) {
+                std::cerr << "Error setting SO_TIMESTAMPING" << std::endl;
+                exit(-1);
+            }
+
+            constexpr int busy_poll_interval = 50;
+            if (setsockopt(sock, SOL_SOCKET, SO_BUSY_POLL, &busy_poll_interval, sizeof(busy_poll_interval)) < 0) {
+                std::cerr << "Error setting SO_BUSY_POLL" << std::endl;
+                exit(-1);
+            }
         }
     }
 
     while (running) {
         if (settings.mode == TCP) {
             sock = setupSocket(settings);
-            clientSock = accept(sock, nullptr, nullptr);
+            sock = accept(sock, nullptr, nullptr);
+
+            constexpr int flags = SOF_TIMESTAMPING_RX_SOFTWARE;
+            if (setsockopt(sock, SOL_SOCKET, SO_TIMESTAMPING, &flags, sizeof(flags)) < 0) {
+                std::cerr << "Error setting SO_TIMESTAMPING" << std::endl;
+                exit(-1);
+            }
+
+            constexpr int busy_poll_interval = 50;
+            if (setsockopt(sock, SOL_SOCKET, SO_BUSY_POLL, &busy_poll_interval, sizeof(busy_poll_interval)) < 0) {
+                std::cerr << "Error setting SO_BUSY_POLL" << std::endl;
+                exit(-1);
+            }
         }
 
         const auto [protocol, timestamp, addr_in] = recvMessage(sock);
         if (protocol.hops <= 1) {
-            uint64_t timeDifference = timestamp->tv_sec * 1000000 + timestamp->tv_nsec / 1000 - protocol.timestamp;
+            uint64_t timeDifference = timestamp - protocol.timestamp;
             char buffer[protocol.size];
             std::fill_n(buffer, protocol.size, 255);
 
@@ -85,7 +109,7 @@ void runServer(const Settings &settings) {
             std::memcpy(buffer + index, &hops, 1);
 
             if (settings.mode != UDP) {
-                if (const ssize_t sent = send(clientSock, buffer, protocol.size, 0); sent < 0) {
+                if (const ssize_t sent = send(sock, buffer, protocol.size, 0); sent < 0) {
                     std::cerr << "Error writing to socket" << std::endl;
                     exit(-1);
                 }
@@ -106,7 +130,7 @@ void runServer(const Settings &settings) {
             std::memcpy(buffer + index, &hops, 1);
 
             if (settings.mode == TCP_STREAM) {
-                if (const ssize_t sent = send(clientSock, buffer, protocol.size, 0); sent < 0) {
+                if (const ssize_t sent = send(sock, buffer, protocol.size, 0); sent < 0) {
                     std::cerr << "Error writing to socket" << std::endl;
                     exit(-1);
                 }
@@ -126,6 +150,9 @@ void runServer(const Settings &settings) {
 
                 send(responseSock, buffer, protocol.size, 0);
             }
+        }
+        if (settings.mode != TCP_STREAM) {
+            close(sock);
         }
     }
 }

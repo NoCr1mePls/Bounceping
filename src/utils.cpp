@@ -68,43 +68,17 @@ bool lockMemory() {
 
 Message recvMessage(const int& sock) {
     char buffer[13];
-    char control[1024];
-
-    iovec iov{};
-    iov.iov_base = buffer;
-    iov.iov_len = sizeof(buffer);
 
     sockaddr_in sender{};
-    msghdr msg{};
-    msg.msg_name = &sender;
-    msg.msg_iov = &iov;
-    msg.msg_iovlen = 1;
-    msg.msg_control = control;
-    msg.msg_controllen = sizeof(control);
+    socklen_t senderLength = sizeof(sender);
 
-    if (const ssize_t bytes = recvmsg(sock, &msg, 0); bytes < 0) {
-        std::cerr << "Error reading from socket" << std::endl;
+    if (const ssize_t bytes = recvfrom(sock, &buffer, sizeof(buffer), 0, reinterpret_cast<sockaddr*>(&sender), &senderLength); bytes < 0) {
+        std::cerr << "Error reading from socket: " << strerror(errno) << std::endl;
         exit(-1);
     }
 
-    const timespec *timestamp = nullptr;
-
-    for (cmsghdr *cmsg = CMSG_FIRSTHDR(&msg); cmsg != nullptr; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
-        if (cmsg->cmsg_level == SOL_SOCKET) {
-            switch (cmsg->cmsg_type) {
-                case SO_TIMESTAMPING:
-                    timestamp = reinterpret_cast<timespec *>(CMSG_DATA(cmsg));
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    if (timestamp == nullptr) {
-        std::cerr << "Error getting kernel timestamp." << std::endl;
-        exit(-1);
-    }
+    const std::uint64_t timestamp = std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::system_clock::now().time_since_epoch()).count();
 
     Protocol protocol{};
 
