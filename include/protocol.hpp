@@ -4,7 +4,7 @@
 struct Protocol {
     std::int32_t size;
     std::int64_t timestamp;
-    char hops;
+    unsigned char hops;
 };
 
 struct Message {

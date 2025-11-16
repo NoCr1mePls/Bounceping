@@ -80,7 +80,7 @@ void runServer(const Settings &settings) {
             char buffer[protocol.size];
             std::fill_n(buffer, protocol.size, 255);
 
-            char hops = protocol.hops;
+            unsigned char hops = protocol.hops;
             hops--;
 
             int index = 0;

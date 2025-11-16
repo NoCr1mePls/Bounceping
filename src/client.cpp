@@ -122,7 +122,7 @@ void runClient(const Settings &settings) {
                     char bounceBuffer[protocol.size];
                     std::fill_n(buffer, protocol.size, 255);
 
-                    char hops = protocol.hops;
+                    unsigned char hops = protocol.hops;
                     hops--;
 
                     int bounceIndex = 0;
@@ -177,6 +177,8 @@ void runClient(const Settings &settings) {
         }
 
         std::this_thread::sleep_for(std::chrono::seconds(settings.interval));
+
+        runTime += testTime;
     }
 
     if (outputFile.has_value()) {
