@@ -21,9 +21,9 @@ CLIENT USAGE:
 OPTIONS:
   -h             Show this help page
   -p <port>      Specify the destination port
-  -H <hops>      Maximum allowed hops
+  -H <hops>      The number of hops (1-255)
   -c <count>     Messages per batch
-  -s <size>      Message size in bytes
+  -s <size>      Message size in bytes (default 13)
   -t <tests>     Number of tests to run
   -b <batches>   Batches per test
   -i <seconds>   Interval between tests

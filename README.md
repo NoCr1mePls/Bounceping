@@ -3,10 +3,10 @@
 # Protocol
 The protocol is the following data packed together is bytes (this is done for easy of processing and performance reasons.)
 It is defined as the following:
+- Size (4 bytes)
 - Timestamp (8 bytes)
-- Source (4 bytes)
-- Destination (4 bytes)
 - Hops (1 byte)
+- Any filler data (??? bytes)
 
 Timestamp is a unix epoch in microseconds. The source is the client IP address (this does not change between the hops). 
 Destination is the server, which this message bounces between. Hops is the amount of hops that still have to be 
@@ -34,9 +34,9 @@ flags:
 ```yaml
 -h : shows a help page
 -p : specify the port
--H : specify the amount of hops
+-H : specify the amount of hops (1-255)
 -c : amount of messages per batch
--s : message size
+-s : message size (default 13)
 -t : amount of tests
 -b : amount of batches per test
 -i : interval between tests in seconds

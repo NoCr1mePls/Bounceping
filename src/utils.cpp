@@ -67,7 +67,7 @@ bool lockMemory() {
 }
 
 Message recvMessage(const int& sock) {
-    char buffer[17];
+    char buffer[13];
     char control[1024];
 
     iovec iov{};
@@ -109,12 +109,10 @@ Message recvMessage(const int& sock) {
     Protocol protocol{};
 
     int index = 0;
+    std::memcpy(&protocol.size, buffer + index, 4);
+    index += 4;
     std::memcpy(&protocol.timestamp, buffer + index, 8);
     index += 8;
-    std::memcpy(protocol.source, buffer + index, 4);
-    index += 4;
-    std::memcpy(protocol.destination, buffer + index, 4);
-    index += 4;
     std::memcpy(&protocol.hops, buffer + index, 1);
 
     return {protocol, timestamp, sender};

@@ -5,6 +5,7 @@
 #include <thread>
 #include <unistd.h>
 
+#include "client.hpp"
 #include "server.hpp"
 #include "settings.hpp"
 #include "utils.hpp"
@@ -49,7 +50,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, const int argc, cha
             }
             case 'H': {
                 if (const int hops = safeStoi(optarg); hops > 0) {
-                    settings.hops = hops;
+                    settings.hops = static_cast<unsigned char>(hops);
                 } else {
                     std::cerr << optarg << " is not a valid number of hops" << std::endl;
                     return -1;
@@ -140,10 +141,6 @@ std::optional<int> getCommandLineOptions(Settings& settings, const int argc, cha
     return std::nullopt;
 }
 
-void sig_handler(int sig) {
-
-}
-
 int main(const int argc, char *argv[]) {
     registerSignalHandler();
 
@@ -156,16 +153,14 @@ int main(const int argc, char *argv[]) {
     lockMemory();
 
     if (settings.isServer) {
-        std::thread server(runServer, settings);
-
-        if (const std::optional<int> thrSrvResult = setupThread(server.native_handle()); thrSrvResult.has_value()) {
-            return thrSrvResult.value();
+        if (const std::optional<int> thrCliResult = setupThread(pthread_self()); thrCliResult.has_value()) {
+            return thrCliResult.value();
         }
-
-        server.join();
+        runServer(settings);
     } else {
         if (const std::optional<int> thrCliResult = setupThread(pthread_self()); thrCliResult.has_value()) {
             return thrCliResult.value();
         }
+        runClient(settings);
     }
 }

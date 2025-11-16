@@ -10,9 +10,9 @@ enum Mode {
 
 struct Settings {
     int port = 13234;
-    int hops = 1;
+    unsigned char hops = 1;
     int count = 1;
-    int size = 120;
+    int size = 13;
     Mode mode = TCP;
     int tests = 1;
     int batches = 10;
