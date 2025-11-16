@@ -8,6 +8,7 @@
 #include "server.hpp"
 #include "settings.hpp"
 #include "utils.hpp"
+#include "signal.hpp"
 
 std::optional<int> getCommandLineOptions(Settings& settings, const int argc, char* argv[]) {
     if (argc <= 1) {
@@ -139,7 +140,13 @@ std::optional<int> getCommandLineOptions(Settings& settings, const int argc, cha
     return std::nullopt;
 }
 
+void sig_handler(int sig) {
+
+}
+
 int main(const int argc, char *argv[]) {
+    registerSignalHandler();
+
     Settings settings;
 
     if (const std::optional<int> cmdResult = getCommandLineOptions(settings, argc, argv); cmdResult.has_value()) {
@@ -148,17 +155,17 @@ int main(const int argc, char *argv[]) {
 
     lockMemory();
 
-    std::thread server(runServer, settings);
+    if (settings.isServer) {
+        std::thread server(runServer, settings);
 
-    if (const std::optional<int> thrSrvResult = setupThread(server.native_handle()); thrSrvResult.has_value()) {
-        return thrSrvResult.value();
-    }
+        if (const std::optional<int> thrSrvResult = setupThread(server.native_handle()); thrSrvResult.has_value()) {
+            return thrSrvResult.value();
+        }
 
-    if (!settings.isServer) {
+        server.join();
+    } else {
         if (const std::optional<int> thrCliResult = setupThread(pthread_self()); thrCliResult.has_value()) {
             return thrCliResult.value();
         }
     }
-
-    server.join();
 }

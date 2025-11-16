@@ -10,6 +10,8 @@ add_executable(bounceping src/main.cpp
         include/server.hpp
         src/server.cpp
         include/client.hpp
-        src/client.cpp)
+        src/client.cpp
+        include/signal.hpp
+        include/protocol.hpp)
 
 include_directories(include)

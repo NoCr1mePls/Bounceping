@@ -12,7 +12,7 @@ SERVER USAGE:
 OPTIONS:
   -h        Show this help page
   -p <port> Specify the port to listen on
-  -m <mode> Set the server mode: TCP | UDP | TCP_STREAM
+  -m <mode> Set the server mode: TCP | UDP | TCP_STREAM (Default: TCP_STREAM)
 
 
 CLIENT USAGE:
@@ -29,6 +29,7 @@ OPTIONS:
   -i <seconds>   Interval between tests
   -o <file>      Output file for detailed results
   -T <ms>        Delay threshold; filter out excessively long responses
+  -m <mode>      Set the server mode: TCP | UDP | TCP_STREAM (Default: TCP_STREAM)
 
 
 EXAMPLES:

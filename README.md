@@ -14,7 +14,7 @@ processed, this is decreased every bounce.
 
 When there is an odd number of hops, the message will end at the server side and will need to be sent back to the client.
 This is done with the same message, however the timestamp will be the total time it took (so the difference) and the hops
-will be set to -1.
+will be set to 0.
 
 # Usage
 Starting the server for the tool is done with the following command:<br>
@@ -24,7 +24,7 @@ flags:
 ```yaml
 -h : shows a help page
 -p : Specify the port
--m : Specify the mode (TCP, UDP, TCP_STREAM)
+-m : Specify the mode (TCP, UDP, TCP_STREAM) (default = TCP_STREAM)
 ```
 
 you can then send a bounceping with the following:<br>
@@ -42,5 +42,5 @@ flags:
 -i : interval between tests in seconds
 -o : output file for detailed results.
 -T : The Threshold for times, to filter out excessively big delays.
--m : Specify the mode (TCP, UDP, TCP_STREAM)
+-m : Specify the mode (TCP, UDP, TCP_STREAM) (default = TCP_STREAM)
 ```
