@@ -77,7 +77,7 @@ void runServer(const Settings &settings) {
         const auto [protocol, timestamp, addr_in] = recvMessage(sock);
         if (protocol.hops <= 1) {
             uint64_t timeDifference = timestamp - protocol.timestamp;
-            char buffer[protocol.size];
+            unsigned char buffer[protocol.size];
             std::fill_n(buffer, protocol.size, 255);
 
             unsigned char hops = protocol.hops;
@@ -87,7 +87,7 @@ void runServer(const Settings &settings) {
             std::memcpy(buffer + index, &protocol.size, 4);
             index += 4;
             std::memcpy(buffer + index, &timeDifference, 8);
-            index += 4;
+            index += 8;
             std::memcpy(buffer + index, &hops, 1);
 
             if (settings.mode != UDP) {
@@ -99,16 +99,16 @@ void runServer(const Settings &settings) {
                 sendto(sock, buffer, protocol.size, 0, reinterpret_cast<const sockaddr*>(&addr_in), sizeof(addr_in));
             }
         } else {
-            char buffer[protocol.size];
+            unsigned char buffer[protocol.size];
             std::fill_n(buffer, protocol.size, 255);
 
-            char hops = protocol.hops;
+            unsigned char hops = protocol.hops;
             hops--;
             int index = 0;
             std::memcpy(buffer + index, &protocol.size, 4);
             index += 4;
             std::memcpy(buffer + index, &protocol.timestamp, 8);
-            index += 4;
+            index += 8;
             std::memcpy(buffer + index, &hops, 1);
 
             if (settings.mode == TCP_STREAM) {

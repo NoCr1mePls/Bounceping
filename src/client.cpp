@@ -71,7 +71,7 @@ void runClient(const Settings &settings) {
                     sock = setupSocket(settings);
                 }
 
-                char buffer[settings.size];
+                unsigned char buffer[settings.size];
                 std::fill_n(buffer, settings.size, 255);
 
                 sockaddr_in local{};
@@ -119,11 +119,12 @@ void runClient(const Settings &settings) {
                         *outputFile << "Message received. Current batchtime: " << batchTime << "us" << std::endl;
                     }
                 } else {
-                    char bounceBuffer[protocol.size];
+                    unsigned char bounceBuffer[protocol.size];
                     std::fill_n(buffer, protocol.size, 255);
 
                     unsigned char hops = protocol.hops;
                     hops--;
+                    messageCount++;
 
                     int bounceIndex = 0;
                     std::memcpy(bounceBuffer + bounceIndex, &protocol.size, 4);
