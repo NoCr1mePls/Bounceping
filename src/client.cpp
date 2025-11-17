@@ -62,15 +62,9 @@ void runClient(const Settings &settings) {
         for (int batch = 0; batch < settings.batches && running; batch++) {
             uint64_t batchTime = 0;
 
-            int sock = 0;
-            if (settings.mode != TCP) {
-                sock = setupSocket(settings);
-            }
-            for (int messageCount = 0; messageCount < settings.count && running; messageCount++) {
-                if (settings.mode == TCP) {
-                    sock = setupSocket(settings);
-                }
+            int sock = setupSocket(settings);
 
+            for (int messageCount = 0; messageCount < settings.count && running; messageCount++) {
                 unsigned char buffer[sizeof(Protocol)];
                 std::fill_n(buffer, settings.size, 255);
 
@@ -129,24 +123,10 @@ void runClient(const Settings &settings) {
                     bounceIndex += 8;
                     std::memcpy(bounceBuffer + bounceIndex, &hops, 1);
 
-                    if (settings.mode != TCP) {
-                        if (const ssize_t sent = send(sock, bounceBuffer, message->protocol.size, 0); sent < 0) {
-                            std::cerr << "Error writing to socket" << std::endl;
-                            exit(-1);
-                        }
-                    } else {
-                        const int responseSock = socket(AF_INET, SOCK_STREAM, 0);
-                        if (responseSock < 0) {
-                            std::cerr << "Error creating socket" << std::endl;
-                            exit(-1);
-                        }
 
-                        if (connect(responseSock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) < 0) {
-                            std::cerr << "Error connecting to socket" << std::endl;
-                            exit(-1);
-                        }
-
-                        send(responseSock, bounceBuffer, message->protocol.size, 0);
+                    if (const ssize_t sent = send(sock, bounceBuffer, message->protocol.size, 0); sent < 0) {
+                        std::cerr << "Error writing to socket" << std::endl;
+                        exit(-1);
                     }
                 }
 

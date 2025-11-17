@@ -31,7 +31,7 @@ flags:
 ```yaml
 -h : shows a help page
 -p : Specify the port
--m : Specify the mode (TCP, UDP, TCP_STREAM) (default = TCP_STREAM)
+-m : Specify the mode (TCP, UDP) (default = TCP)
 ```
 
 you can then send a bounceping with the following:<br>
@@ -49,5 +49,5 @@ flags:
 -i : interval between tests in seconds
 -o : output file for detailed results.
 -T : The Threshold for times, to filter out excessively big delays.
--m : Specify the mode (TCP, UDP, TCP_STREAM) (default = TCP_STREAM)
+-m : Specify the mode (TCP, UDP) (default = TCP)
 ```

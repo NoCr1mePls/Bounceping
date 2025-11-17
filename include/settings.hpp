@@ -4,8 +4,7 @@
 
 enum Mode {
     TCP,
-    UDP,
-    TCP_STREAM
+    UDP
 };
 
 struct Settings {
@@ -13,7 +12,7 @@ struct Settings {
     unsigned char hops = 1;
     int count = 1;
     int size = 13;
-    Mode mode = TCP_STREAM;
+    Mode mode = TCP;
     int tests = 1;
     int batches = 10;
     int interval = 3;

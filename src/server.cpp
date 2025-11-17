@@ -56,34 +56,20 @@ void runServer(const Settings &settings) {
     int sock = 0;
 
     while (running) {
-        if (settings.mode != TCP) {
-            int clientSock = setupSocket(settings);
-            if (settings.mode == TCP_STREAM) {
-                sock = accept(clientSock, nullptr, nullptr);
-                close(clientSock);
-                constexpr int busy_poll_interval = 50;
-                if (setsockopt(sock, SOL_SOCKET, SO_BUSY_POLL, &busy_poll_interval, sizeof(busy_poll_interval)) < 0) {
-                    std::cerr << "Error setting SO_BUSY_POLL" << std::endl;
-                    exit(-1);
-                }
-            } else {
-                sock = clientSock;
+        const int clientSock = setupSocket(settings);
+        if (settings.mode == TCP) {
+            sock = accept(clientSock, nullptr, nullptr);
+            close(clientSock);
+            constexpr int busy_poll_interval = 50;
+            if (setsockopt(sock, SOL_SOCKET, SO_BUSY_POLL, &busy_poll_interval, sizeof(busy_poll_interval)) < 0) {
+                std::cerr << "Error setting SO_BUSY_POLL" << std::endl;
+                exit(-1);
             }
+        } else {
+            sock = clientSock;
         }
 
         while (running) {
-            if (settings.mode == TCP) {
-                const int clientsock = setupSocket(settings);
-                sock = accept(clientsock, nullptr, nullptr);
-                close(clientsock);
-
-                constexpr int busy_poll_interval = 50;
-                if (setsockopt(sock, SOL_SOCKET, SO_BUSY_POLL, &busy_poll_interval, sizeof(busy_poll_interval)) < 0) {
-                    std::cerr << "Error setting SO_BUSY_POLL" << std::endl;
-                    exit(-1);
-                }
-            }
-
             const std::optional<Message> message = recvMessage(sock);
 
             if (!message.has_value()) {
@@ -104,32 +90,13 @@ void runServer(const Settings &settings) {
 
             std::memcpy(buffer + index, &hops, 1);
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-            if (settings.mode == TCP_STREAM) {
+            if (settings.mode == TCP) {
                 if (const ssize_t sent = send(sock, buffer, message->protocol.size, 0); sent < 0) {
                     std::cerr << "Error writing to socket" << std::endl;
                     exit(-1);
                 }
-            } else if (settings.mode == UDP) {
-                sendto(sock, buffer, message->protocol.size, 0, reinterpret_cast<const sockaddr *>(&message->sender), sizeof(message->sender));
             } else {
-                const int responseSock = socket(AF_INET, SOCK_STREAM, 0);
-                if (responseSock < 0) {
-                    std::cerr << "Error creating socket" << std::endl;
-                    exit(-1);
-                }
-
-                if (connect(responseSock, reinterpret_cast<const sockaddr *>(&message->sender), sizeof(message->sender)) < 0) {
-                    std::cerr << "Error connecting to socket" << std::endl;
-                    exit(-1);
-                }
-
-                send(responseSock, buffer, message->protocol.size, 0);
-            }
-
-            if (settings.mode == TCP) {
-                close(sock);
+                sendto(sock, buffer, message->protocol.size, 0, reinterpret_cast<const sockaddr *>(&message->sender), sizeof(message->sender));
             }
         }
     }
