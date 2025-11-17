@@ -11,7 +11,7 @@
 #include "utils.hpp"
 #include "signal.hpp"
 
-std::optional<int> getCommandLineOptions(Settings& settings, const int argc, char* argv[]) {
+std::optional<int> getCommandLineOptions(Settings &settings, const int argc, char *argv[]) {
     if (argc <= 1) {
         printHelp();
         return 0;
@@ -57,7 +57,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, const int argc, cha
                 }
                 break;
             }
-            case 'c' : {
+            case 'c': {
                 if (const int count = safeStoi(optarg); count > 0) {
                     settings.count = count;
                 } else {
@@ -66,7 +66,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, const int argc, cha
                 }
                 break;
             }
-            case 's' : {
+            case 's': {
                 if (const int size = safeStoi(optarg); size > 100) {
                     settings.size = size;
                 } else {
@@ -75,7 +75,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, const int argc, cha
                 }
                 break;
             }
-            case 't' : {
+            case 't': {
                 if (const int tests = safeStoi(optarg); tests > 0) {
                     settings.tests = tests;
                 } else {
@@ -84,7 +84,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, const int argc, cha
                 }
                 break;
             }
-            case 'b' : {
+            case 'b': {
                 if (const int batch = safeStoi(optarg); batch > 0) {
                     settings.batches = batch;
                 } else {
@@ -93,7 +93,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, const int argc, cha
                 }
                 break;
             }
-            case 'i' : {
+            case 'i': {
                 if (const int interval = safeStoi(optarg); interval > 0) {
                     settings.interval = interval;
                 } else {
@@ -102,7 +102,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, const int argc, cha
                 }
                 break;
             }
-            case 'o' : {
+            case 'o': {
                 if (std::filesystem::exists(optarg)) {
                     settings.output = optarg;
                 } else {
@@ -111,7 +111,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, const int argc, cha
                 }
                 break;
             }
-            case 'T' : {
+            case 'T': {
                 if (const int threshold = safeStoi(optarg); threshold > 0) {
                     settings.threshold = threshold;
                 } else {
@@ -120,7 +120,7 @@ std::optional<int> getCommandLineOptions(Settings& settings, const int argc, cha
                 }
                 break;
             }
-            case 'm' : {
+            case 'm': {
                 if (toLowerCase(optarg) == "tcp") {
                     settings.mode = TCP;
                 } else if (toLowerCase(optarg) == "udp") {
@@ -163,4 +163,5 @@ int main(const int argc, char *argv[]) {
         }
         runClient(settings);
     }
+    return 0;
 }

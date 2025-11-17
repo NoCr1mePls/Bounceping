@@ -66,6 +66,8 @@ void runServer(const Settings &settings) {
                     std::cerr << "Error setting SO_BUSY_POLL" << std::endl;
                     exit(-1);
                 }
+            } else {
+                sock = clientSock;
             }
         }
 
@@ -82,7 +84,6 @@ void runServer(const Settings &settings) {
                 }
             }
 
-            std::cout << "Waiting" << std::endl;
             const std::optional<Message> message = recvMessage(sock);
 
             if (!message.has_value()) {
