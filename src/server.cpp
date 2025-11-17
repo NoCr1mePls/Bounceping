@@ -24,6 +24,12 @@ static int setupSocket(const Settings &settings) {
         exit(-1);
     }
 
+    constexpr int opt = 1;
+    if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        std::cerr << "Error setting SO_REUSEADDR" << std::endl;
+        exit(-1);
+    }
+
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
     addr.sin_port = htons(settings.port);
@@ -51,9 +57,10 @@ void runServer(const Settings &settings) {
 
     while (running) {
         if (settings.mode != TCP) {
-            sock = setupSocket(settings);
+            int clientSock = setupSocket(settings);
             if (settings.mode == TCP_STREAM) {
-                sock = accept(sock, nullptr, nullptr);
+                sock = accept(clientSock, nullptr, nullptr);
+                close(clientSock);
                 constexpr int busy_poll_interval = 50;
                 if (setsockopt(sock, SOL_SOCKET, SO_BUSY_POLL, &busy_poll_interval, sizeof(busy_poll_interval)) < 0) {
                     std::cerr << "Error setting SO_BUSY_POLL" << std::endl;
@@ -64,8 +71,9 @@ void runServer(const Settings &settings) {
 
         while (running) {
             if (settings.mode == TCP) {
-                sock = setupSocket(settings);
-                sock = accept(sock, nullptr, nullptr);
+                const int clientsock = setupSocket(settings);
+                sock = accept(clientsock, nullptr, nullptr);
+                close(clientsock);
 
                 constexpr int busy_poll_interval = 50;
                 if (setsockopt(sock, SOL_SOCKET, SO_BUSY_POLL, &busy_poll_interval, sizeof(busy_poll_interval)) < 0) {

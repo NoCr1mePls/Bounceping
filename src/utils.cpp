@@ -79,7 +79,9 @@ std::optional<Message> recvMessage(const int& sock) {
         exit(-1);
     }
     if (bytes == 0) {
-        close(sock);
+        if (close(sock) < 0) {
+            std::cerr << "Error closing socket: " << strerror(errno) << std::endl;
+        }
         return std::nullopt;
     }
 

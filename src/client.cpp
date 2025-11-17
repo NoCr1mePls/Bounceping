@@ -34,7 +34,7 @@ static int setupSocket(const Settings &settings) {
     addr.sin_addr.s_addr = inet_addr(settings.ip.c_str());
 
     if (connect(sock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) < 0) {
-        std::cerr << "Error connecting to socket" << std::endl;
+        std::cerr << "Error connecting to socket: " << strerror(errno) << std::endl;
         exit(-1);
     }
 
@@ -159,21 +159,21 @@ void runClient(const Settings &settings) {
             if (outputFile.has_value()) {
                 *outputFile << std::endl;
                 *outputFile << "Total message time: " << batchTime << "us" << std::endl;
-                *outputFile << "Average message time: " << batchTime / settings.batches << "us" << std::endl;
+                *outputFile << "Average message time: " << batchTime / settings.count << "us" << std::endl;
             }
             std::cout << "Total message time for batch " << batch <<  ": " << batchTime << "us" << std::endl;
-            std::cout << "Average message time for batch " << batch << ": " << batchTime / settings.batches << "us" << std::endl;
+            std::cout << "Average message time for batch " << batch << ": " << batchTime / settings.count << "us" << std::endl;
             testTime += batchTime;
         }
 
         if (outputFile.has_value()) {
             *outputFile << std::endl;
             *outputFile << "Total batch time: " << testTime << "us" << std::endl;
-            *outputFile << "Average batch time: " << testTime / settings.tests << "us" << std::endl;
+            *outputFile << "Average batch time: " << testTime / settings.batches << "us" << std::endl;
         }
         std::cout << std::endl;
         std::cout << "Total batch time for test " << test << ": " << testTime << "us" << std::endl;
-        std::cout << "Average batch time for test " << test << ": " << testTime / settings.tests << "us" << std::endl;
+        std::cout << "Average batch time for test " << test << ": " << testTime / settings.batches << "us" << std::endl;
 
 
         if (outputFile.has_value()) {
@@ -188,11 +188,11 @@ void runClient(const Settings &settings) {
     if (outputFile.has_value()) {
         *outputFile << "==============================================" << std::endl;
         *outputFile << "Total batch time: " << runTime << "us" << std::endl;
-        *outputFile << "Average batch time: " << runTime / settings.tests << "us" << std::endl;
+        *outputFile << "Average batch time: " << runTime / static_cast<long double>(settings.tests) / static_cast<long double>(1000000.0) << "s" << std::endl;
     }
     std::cout << std::endl;
     std::cout << "Total test time: " << runTime / static_cast<long double>(1000000.0) << "s" << std::endl;
-    std::cout << "Average test time: " << runTime / static_cast<long double>(settings.tests) / static_cast<long double>(1000000.0) << "us" << std::endl;
+    std::cout << "Average test time: " << runTime / static_cast<long double>(settings.tests) / static_cast<long double>(1000000.0) << "s" << std::endl;
 
     if (outputFile.has_value()) {
         outputFile->close();
