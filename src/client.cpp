@@ -94,7 +94,7 @@ void runClient(const Settings &settings) {
 
                     if (settings.threshold > 0) {
                         if (timeDifference > settings.threshold) {
-                            batch++;
+                            batch--;
                             std::cout << "Hit threshold! waiting 5 seconds." << std::endl;
                             std::this_thread::sleep_for(std::chrono::seconds(5));
                         } else {
@@ -113,7 +113,7 @@ void runClient(const Settings &settings) {
 
                     unsigned char hops = message->protocol.hops;
                     hops--;
-                    messageCount++;
+                    messageCount--;
 
                     int bounceIndex = 0;
                     std::memcpy(bounceBuffer + bounceIndex, &message->protocol.size, 4);
