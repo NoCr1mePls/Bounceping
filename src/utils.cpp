@@ -66,16 +66,21 @@ bool lockMemory() {
     return true;
 }
 
-Message recvMessage(const int& sock) {
+std::optional<Message> recvMessage(const int& sock) {
     unsigned char buffer[13];
 
     sockaddr_in sender{};
     socklen_t senderLength = sizeof(sender);
 
-    if (const ssize_t bytes = recvfrom(sock, &buffer, sizeof(buffer), 0, reinterpret_cast<sockaddr*>(&sender), &senderLength); bytes <= 0) {
+    const ssize_t bytes = recvfrom(sock, &buffer, sizeof(buffer), 0, reinterpret_cast<sockaddr*>(&sender), &senderLength);
+    if (bytes < 0) {
         std::cerr << "Error reading from socket: " << strerror(errno) << std::endl;
         close(sock);
         exit(-1);
+    }
+    if (bytes == 0) {
+        close(sock);
+        return std::nullopt;
     }
 
     const std::uint64_t timestamp = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -90,5 +95,11 @@ Message recvMessage(const int& sock) {
     index += 8;
     std::memcpy(&protocol.hops, buffer + index, 1);
 
-    return {protocol, timestamp, sender};
+    Message message{};
+
+    message.protocol = protocol;
+    message.timestamp = timestamp;
+    message.sender = sender;
+
+    return message;
 }

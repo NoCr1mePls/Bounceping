@@ -11,4 +11,4 @@ int safeStoi(const std::string& input);
 bool validateIpAddress(const std::string& ipAddress);
 std::optional<int> setupThread(const pthread_t& thread);
 bool lockMemory();
-Message recvMessage(const int& sock);
+std::optional<Message> recvMessage(const int& sock);

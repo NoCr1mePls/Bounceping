@@ -151,7 +151,11 @@ void runClient(const Settings &settings) {
                         send(responseSock, bounceBuffer, protocol.size, 0);
                     }
                 }
+
+                close(sock);
             }
+
+
             if (outputFile.has_value()) {
                 *outputFile << std::endl;
                 *outputFile << "Total message time: " << batchTime << "us" << std::endl;
