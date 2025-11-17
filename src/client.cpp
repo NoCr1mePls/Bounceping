@@ -71,7 +71,7 @@ void runClient(const Settings &settings) {
                     sock = setupSocket(settings);
                 }
 
-                unsigned char buffer[settings.size];
+                unsigned char buffer[sizeof(Protocol)];
                 std::fill_n(buffer, settings.size, 255);
 
                 sockaddr_in local{};
@@ -97,11 +97,8 @@ void runClient(const Settings &settings) {
                 const auto [protocol, ts, addr_in] = recvMessage(sock);
                 if (protocol.hops <= 1) {
                     uint64_t timeDifference = 0;
-                    if (protocol.hops == 1) {
-                        timeDifference = ts - protocol.timestamp;
-                    } else {
-                        timeDifference += protocol.timestamp;
-                    }
+                    timeDifference = ts - protocol.timestamp;
+
 
                     if (settings.threshold > 0) {
                         if (timeDifference > settings.threshold) {

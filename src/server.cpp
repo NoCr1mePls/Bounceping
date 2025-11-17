@@ -52,8 +52,8 @@ void runServer(const Settings &settings) {
     if (settings.mode != TCP) {
         sock = setupSocket(settings);
         if (settings.mode == TCP_STREAM) {
-            sock = accept(sock, nullptr, nullptr);
 
+            sock = accept(sock, nullptr, nullptr);
             constexpr int busy_poll_interval = 50;
             if (setsockopt(sock, SOL_SOCKET, SO_BUSY_POLL, &busy_poll_interval, sizeof(busy_poll_interval)) < 0) {
                 std::cerr << "Error setting SO_BUSY_POLL" << std::endl;
@@ -82,10 +82,12 @@ void runServer(const Settings &settings) {
         unsigned char hops = protocol.hops;
         hops--;
         int index = 0;
-        std::memcpy(buffer + index, &protocol.size, 4);
-        index += 4;
-        std::memcpy(buffer + index, &protocol.timestamp, 8);
-        index += 8;
+        std::memcpy(buffer + index, &protocol.size, sizeof(protocol.size));
+        index += sizeof(protocol.size);
+
+        std::memcpy(buffer + index, &protocol.timestamp, sizeof(protocol.timestamp));
+        index += sizeof(protocol.timestamp);
+
         std::memcpy(buffer + index, &hops, 1);
 
         if (settings.mode == TCP_STREAM) {

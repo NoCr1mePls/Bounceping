@@ -1,11 +1,13 @@
 #pragma once
 #include <netinet/in.h>
 
+#pragma pack(push,1)
 struct Protocol {
-    std::int32_t size;
-    std::int64_t timestamp;
+    std::uint32_t size;
+    std::uint64_t timestamp;
     unsigned char hops;
 };
+#pragma pack(pop)
 
 struct Message {
     Protocol protocol;
