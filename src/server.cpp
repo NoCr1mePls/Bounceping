@@ -104,6 +104,8 @@ void runServer(const Settings &settings) {
 
             std::memcpy(buffer + index, &hops, 1);
 
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
             if (settings.mode == TCP_STREAM) {
                 if (const ssize_t sent = send(sock, buffer, message->protocol.size, 0); sent < 0) {
                     std::cerr << "Error writing to socket" << std::endl;
