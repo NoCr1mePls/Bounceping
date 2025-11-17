@@ -43,6 +43,7 @@ static int setupSocket(const Settings &settings) {
 
 void runClient(const Settings &settings) {
     uint64_t runTime = 0;
+    int sock = setupSocket(settings);
 
     std::optional<std::ofstream> outputFile;
     if (!settings.output.empty()) {
@@ -61,8 +62,6 @@ void runClient(const Settings &settings) {
 
         for (int batch = 0; batch < settings.batches && running; batch++) {
             uint64_t batchTime = 0;
-
-            int sock = setupSocket(settings);
 
             for (int messageCount = 0; messageCount < settings.count && running; messageCount++) {
                 unsigned char buffer[sizeof(Protocol)];
@@ -130,7 +129,6 @@ void runClient(const Settings &settings) {
                     }
                 }
 
-                close(sock);
             }
 
 
@@ -176,4 +174,6 @@ void runClient(const Settings &settings) {
     if (outputFile.has_value()) {
         outputFile->close();
     }
+
+    close(sock);
 }
