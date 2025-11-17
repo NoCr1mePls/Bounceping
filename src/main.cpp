@@ -125,8 +125,6 @@ std::optional<int> getCommandLineOptions(Settings &settings, const int argc, cha
                     settings.mode = TCP;
                 } else if (toLowerCase(optarg) == "udp") {
                     settings.mode = UDP;
-                } else if (toLowerCase(optarg) == "tcp_stream") {
-                    settings.mode = TCP_STREAM;
                 } else {
                     std::cerr << optarg << " is not a valid mode" << std::endl;
                     return -1;
