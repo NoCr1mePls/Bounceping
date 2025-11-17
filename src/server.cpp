@@ -126,7 +126,7 @@ void runServer(const Settings &settings) {
                 send(responseSock, buffer, message->protocol.size, 0);
             }
 
-            if (settings.mode != TCP_STREAM) {
+            if (settings.mode == TCP) {
                 close(sock);
             }
         }
