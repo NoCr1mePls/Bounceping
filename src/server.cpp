@@ -74,6 +74,7 @@ void runServer(const Settings &settings) {
             }
         }
 
+        std::cout << "Waiting" << std::endl;
         const auto [protocol, timestamp, addr_in] = recvMessage(sock);
 
         unsigned char buffer[protocol.size];

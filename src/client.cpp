@@ -93,7 +93,8 @@ void runClient(const Settings &settings) {
                 std::memcpy(buffer + index, &settings.hops, 1);
 
                 send(sock, buffer, sizeof(buffer), 0);
-
+                //fixme fix this
+                std::cout << "Waiting" << std::endl;
                 const auto [protocol, ts, addr_in] = recvMessage(sock);
                 if (protocol.hops <= 1) {
                     uint64_t timeDifference = 0;
@@ -157,6 +158,7 @@ void runClient(const Settings &settings) {
                 *outputFile << "Average message time: " << batchTime / settings.batches << "us" << std::endl;
             }
             std::cout << "Total message time for batch " << batch <<  ": " << batchTime << "us" << std::endl;
+            std::cout << "Average message time for batch " << batch << ": " << batchTime / settings.batches << "us" << std::endl;
             testTime += batchTime;
         }
 
