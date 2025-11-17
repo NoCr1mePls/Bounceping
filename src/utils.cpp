@@ -72,8 +72,9 @@ Message recvMessage(const int& sock) {
     sockaddr_in sender{};
     socklen_t senderLength = sizeof(sender);
 
-    if (const ssize_t bytes = recvfrom(sock, &buffer, sizeof(buffer), 0, reinterpret_cast<sockaddr*>(&sender), &senderLength); bytes < 0) {
+    if (const ssize_t bytes = recvfrom(sock, &buffer, sizeof(buffer), 0, reinterpret_cast<sockaddr*>(&sender), &senderLength); bytes <= 0) {
         std::cerr << "Error reading from socket: " << strerror(errno) << std::endl;
+        close(sock);
         exit(-1);
     }
 
