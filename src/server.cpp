@@ -75,29 +75,33 @@ void runServer(const Settings &settings) {
             }
 
             std::cout << "Waiting" << std::endl;
-            const auto [protocol, timestamp, addr_in] = recvMessage(sock);
+            const std::optional<Message> message = recvMessage(sock);
 
-            unsigned char buffer[protocol.size];
-            std::fill_n(buffer, protocol.size, 255);
+            if (!message.has_value()) {
+                break;
+            }
 
-            unsigned char hops = protocol.hops;
+            unsigned char buffer[message->protocol.size];
+            std::fill_n(buffer, message->protocol.size, 255);
+
+            unsigned char hops = message->protocol.hops;
             hops--;
             int index = 0;
-            std::memcpy(buffer + index, &protocol.size, sizeof(protocol.size));
-            index += sizeof(protocol.size);
+            std::memcpy(buffer + index, &message->protocol.size, sizeof(message->protocol.size));
+            index += sizeof(message->protocol.size);
 
-            std::memcpy(buffer + index, &protocol.timestamp, sizeof(protocol.timestamp));
-            index += sizeof(protocol.timestamp);
+            std::memcpy(buffer + index, &message->protocol.timestamp, sizeof(message->protocol.timestamp));
+            index += sizeof(message->protocol.timestamp);
 
             std::memcpy(buffer + index, &hops, 1);
 
             if (settings.mode == TCP_STREAM) {
-                if (const ssize_t sent = send(sock, buffer, protocol.size, 0); sent < 0) {
+                if (const ssize_t sent = send(sock, buffer, message->protocol.size, 0); sent < 0) {
                     std::cerr << "Error writing to socket" << std::endl;
                     exit(-1);
                 }
             } else if (settings.mode == UDP) {
-                sendto(sock, buffer, protocol.size, 0, reinterpret_cast<const sockaddr *>(&addr_in), sizeof(addr_in));
+                sendto(sock, buffer, message->protocol.size, 0, reinterpret_cast<const sockaddr *>(&message->sender), sizeof(message->sender));
             } else {
                 const int responseSock = socket(AF_INET, SOCK_STREAM, 0);
                 if (responseSock < 0) {
@@ -105,12 +109,12 @@ void runServer(const Settings &settings) {
                     exit(-1);
                 }
 
-                if (connect(responseSock, reinterpret_cast<const sockaddr *>(&addr_in), sizeof(addr_in)) < 0) {
+                if (connect(responseSock, reinterpret_cast<const sockaddr *>(&message->sender), sizeof(message->sender)) < 0) {
                     std::cerr << "Error connecting to socket" << std::endl;
                     exit(-1);
                 }
 
-                send(responseSock, buffer, protocol.size, 0);
+                send(responseSock, buffer, message->protocol.size, 0);
             }
 
             if (settings.mode != TCP_STREAM) {

@@ -95,10 +95,10 @@ void runClient(const Settings &settings) {
                 send(sock, buffer, sizeof(buffer), 0);
                 //fixme fix this
                 std::cout << "Waiting" << std::endl;
-                const auto [protocol, ts, addr_in] = recvMessage(sock);
-                if (protocol.hops <= 1) {
+                const std::optional<Message> message = recvMessage(sock);
+                if (message->protocol.hops <= 1) {
                     uint64_t timeDifference = 0;
-                    timeDifference = ts - protocol.timestamp;
+                    timeDifference = message->timestamp - message->protocol.timestamp;
 
 
                     if (settings.threshold > 0) {
@@ -117,22 +117,22 @@ void runClient(const Settings &settings) {
                         *outputFile << "Message received. Current batchtime: " << batchTime << "us" << std::endl;
                     }
                 } else {
-                    unsigned char bounceBuffer[protocol.size];
-                    std::fill_n(buffer, protocol.size, 255);
+                    unsigned char bounceBuffer[message->protocol.size];
+                    std::fill_n(buffer, message->protocol.size, 255);
 
-                    unsigned char hops = protocol.hops;
+                    unsigned char hops = message->protocol.hops;
                     hops--;
                     messageCount++;
 
                     int bounceIndex = 0;
-                    std::memcpy(bounceBuffer + bounceIndex, &protocol.size, 4);
+                    std::memcpy(bounceBuffer + bounceIndex, &message->protocol.size, 4);
                     bounceIndex += 4;
-                    std::memcpy(bounceBuffer + bounceIndex, &protocol.timestamp, 8);
+                    std::memcpy(bounceBuffer + bounceIndex, &message->protocol.timestamp, 8);
                     bounceIndex += 8;
                     std::memcpy(bounceBuffer + bounceIndex, &hops, 1);
 
                     if (settings.mode != TCP) {
-                        if (const ssize_t sent = send(sock, bounceBuffer, protocol.size, 0); sent < 0) {
+                        if (const ssize_t sent = send(sock, bounceBuffer, message->protocol.size, 0); sent < 0) {
                             std::cerr << "Error writing to socket" << std::endl;
                             exit(-1);
                         }
@@ -148,7 +148,7 @@ void runClient(const Settings &settings) {
                             exit(-1);
                         }
 
-                        send(responseSock, bounceBuffer, protocol.size, 0);
+                        send(responseSock, bounceBuffer, message->protocol.size, 0);
                     }
                 }
 
