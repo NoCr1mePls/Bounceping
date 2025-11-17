@@ -10,7 +10,7 @@
 #include "signal.hpp"
 #include "utils.hpp"
 
-static int setupSocket(const Settings& settings) {
+static int setupSocket(const Settings &settings) {
     const int sock = socket(AF_INET, settings.mode == UDP ? SOCK_DGRAM : SOCK_STREAM, 0);
 
     if (sock < 0) {
@@ -30,7 +30,7 @@ static int setupSocket(const Settings& settings) {
     addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(sock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) != 0) {
-        std::cerr << "Error on binding: " << strerror(errno)  << std::endl;
+        std::cerr << "Error on binding: " << strerror(errno) << std::endl;
         exit(-1);
     }
 
@@ -75,64 +75,41 @@ void runServer(const Settings &settings) {
         }
 
         const auto [protocol, timestamp, addr_in] = recvMessage(sock);
-        if (protocol.hops <= 1) {
-            uint64_t timeDifference = timestamp - protocol.timestamp;
-            unsigned char buffer[protocol.size];
-            std::fill_n(buffer, protocol.size, 255);
 
-            unsigned char hops = protocol.hops;
-            hops--;
+        unsigned char buffer[protocol.size];
+        std::fill_n(buffer, protocol.size, 255);
 
-            int index = 0;
-            std::memcpy(buffer + index, &protocol.size, 4);
-            index += 4;
-            std::memcpy(buffer + index, &timeDifference, 8);
-            index += 8;
-            std::memcpy(buffer + index, &hops, 1);
+        unsigned char hops = protocol.hops;
+        hops--;
+        int index = 0;
+        std::memcpy(buffer + index, &protocol.size, 4);
+        index += 4;
+        std::memcpy(buffer + index, &protocol.timestamp, 8);
+        index += 8;
+        std::memcpy(buffer + index, &hops, 1);
 
-            if (settings.mode != UDP) {
-                if (const ssize_t sent = send(sock, buffer, protocol.size, 0); sent < 0) {
-                    std::cerr << "Error writing to socket" << std::endl;
-                    exit(-1);
-                }
-            } else {
-                sendto(sock, buffer, protocol.size, 0, reinterpret_cast<const sockaddr*>(&addr_in), sizeof(addr_in));
+        if (settings.mode == TCP_STREAM) {
+            if (const ssize_t sent = send(sock, buffer, protocol.size, 0); sent < 0) {
+                std::cerr << "Error writing to socket" << std::endl;
+                exit(-1);
             }
+        } else if (settings.mode == UDP) {
+            sendto(sock, buffer, protocol.size, 0, reinterpret_cast<const sockaddr *>(&addr_in), sizeof(addr_in));
         } else {
-            unsigned char buffer[protocol.size];
-            std::fill_n(buffer, protocol.size, 255);
-
-            unsigned char hops = protocol.hops;
-            hops--;
-            int index = 0;
-            std::memcpy(buffer + index, &protocol.size, 4);
-            index += 4;
-            std::memcpy(buffer + index, &protocol.timestamp, 8);
-            index += 8;
-            std::memcpy(buffer + index, &hops, 1);
-
-            if (settings.mode == TCP_STREAM) {
-                if (const ssize_t sent = send(sock, buffer, protocol.size, 0); sent < 0) {
-                    std::cerr << "Error writing to socket" << std::endl;
-                    exit(-1);
-                }
-            } else if (settings.mode == UDP) {
-                sendto(sock, buffer, protocol.size, 0, reinterpret_cast<const sockaddr*>(&addr_in), sizeof(addr_in));
-            } else {
-                const int responseSock = socket(AF_INET, SOCK_STREAM, 0);
-                if (responseSock < 0) {
-                    std::cerr << "Error creating socket" << std::endl;
-                    exit(-1);
-                }
-
-                if (connect(responseSock, reinterpret_cast<const sockaddr*>(&addr_in), sizeof(addr_in)) < 0) {
-                    std::cerr << "Error connecting to socket" << std::endl;
-                    exit(-1);
-                }
-
-                send(responseSock, buffer, protocol.size, 0);
+            const int responseSock = socket(AF_INET, SOCK_STREAM, 0);
+            if (responseSock < 0) {
+                std::cerr << "Error creating socket" << std::endl;
+                exit(-1);
             }
+
+            if (connect(responseSock, reinterpret_cast<const sockaddr *>(&addr_in), sizeof(addr_in)) < 0) {
+                std::cerr << "Error connecting to socket" << std::endl;
+                exit(-1);
+            }
+
+            send(responseSock, buffer, protocol.size, 0);
         }
+
         if (settings.mode != TCP_STREAM) {
             close(sock);
         }
