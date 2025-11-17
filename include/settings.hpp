@@ -15,7 +15,7 @@ struct Settings {
     Mode mode = TCP;
     int tests = 1;
     int batches = 10;
-    int interval = 3;
+    int interval = 1;
     std::string output;
     int threshold = -1;
     std::string ip;

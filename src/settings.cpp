@@ -12,7 +12,7 @@ SERVER USAGE:
 OPTIONS:
   -h        Show this help page
   -p <port> Specify the port to listen on
-  -m <mode> Set the server mode: TCP | UDP | TCP_STREAM (Default: TCP_STREAM)
+  -m <mode> Set the server mode: TCP | UDP (Default: TCPthth)
 
 
 CLIENT USAGE:
