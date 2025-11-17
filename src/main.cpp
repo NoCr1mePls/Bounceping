@@ -20,7 +20,7 @@ std::optional<int> getCommandLineOptions(Settings &settings, const int argc, cha
 
     settings.isServer = isServer;
 
-    const std::string flags = isServer ? "hp:m:" : "hp:H:c:s:t:b:i:o:T:";
+    const std::string flags = isServer ? "hp:m:" : "hp:m:H:c:s:t:b:i:o:T:";
 
     if (!isServer) {
         if (validateIpAddress(argv[1])) {
