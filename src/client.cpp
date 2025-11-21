@@ -63,7 +63,8 @@ void runClient(const Settings &settings) {
         for (int batch = 0; batch < settings.batches && running; batch++) {
             uint64_t batchTime = 0;
 
-            for (int messageCount = 0; messageCount < settings.count && running; messageCount++) {
+            bool doneHopping = false;
+            for (int messageCount = 0; messageCount < settings.count && running && !doneHopping; messageCount++) {
                 unsigned char buffer[sizeof(Protocol)];
                 std::fill_n(buffer, settings.size, 255);
 
@@ -86,49 +87,55 @@ void runClient(const Settings &settings) {
                 std::memcpy(buffer + index, &settings.hops, 1);
 
                 send(sock, buffer, sizeof(buffer), 0);
-                const std::optional<Message> message = recvMessage(sock);
-                if (message->protocol.hops <= 1) {
-                    uint64_t timeDifference = 0;
-                    timeDifference = message->timestamp - message->protocol.timestamp;
+
+                int hops = settings.hops;
+
+                while (hops > 0) {
+                    const std::optional<Message> message = recvMessage(sock);
+                    if (message->protocol.hops <= 1) {
+                        uint64_t timeDifference = 0;
+                        timeDifference = message->timestamp - message->protocol.timestamp;
 
 
-                    if (settings.threshold > 0) {
-                        if (timeDifference > settings.threshold) {
-                            batch--;
-                            std::cout << "Hit threshold! waiting 5 seconds." << std::endl;
-                            std::this_thread::sleep_for(std::chrono::seconds(5));
+                        if (settings.threshold > 0) {
+                            if (timeDifference > settings.threshold) {
+                                batch--;
+                                std::cout << "Hit threshold! waiting 5 seconds." << std::endl;
+                                std::this_thread::sleep_for(std::chrono::seconds(5));
+                            } else {
+                                batchTime += timeDifference;
+                            }
                         } else {
                             batchTime += timeDifference;
                         }
+
+                        if (outputFile.has_value()) {
+                            *outputFile << "Message received. Current batchtime: " << batchTime << "us" << std::endl;
+                        }
+                        doneHopping = true;
+                        break;
                     } else {
-                        batchTime += timeDifference;
-                    }
+                        unsigned char bounceBuffer[message->protocol.size];
+                        std::fill_n(buffer, message->protocol.size, 255);
 
-                    if (outputFile.has_value()) {
-                        *outputFile << "Message received. Current batchtime: " << batchTime << "us" << std::endl;
-                    }
-                } else {
-                    unsigned char bounceBuffer[message->protocol.size];
-                    std::fill_n(buffer, message->protocol.size, 255);
+                        hops = message->protocol.hops;
+                        hops--;
+                        messageCount--;
 
-                    unsigned char hops = message->protocol.hops;
-                    hops--;
-                    messageCount--;
-
-                    int bounceIndex = 0;
-                    std::memcpy(bounceBuffer + bounceIndex, &message->protocol.size, 4);
-                    bounceIndex += 4;
-                    std::memcpy(bounceBuffer + bounceIndex, &message->protocol.timestamp, 8);
-                    bounceIndex += 8;
-                    std::memcpy(bounceBuffer + bounceIndex, &hops, 1);
+                        int bounceIndex = 0;
+                        std::memcpy(bounceBuffer + bounceIndex, &message->protocol.size, 4);
+                        bounceIndex += 4;
+                        std::memcpy(bounceBuffer + bounceIndex, &message->protocol.timestamp, 8);
+                        bounceIndex += 8;
+                        std::memcpy(bounceBuffer + bounceIndex, &hops, 1);
 
 
-                    if (const ssize_t sent = send(sock, bounceBuffer, message->protocol.size, 0); sent < 0) {
-                        std::cerr << "Error writing to socket" << std::endl;
-                        exit(-1);
+                        if (const ssize_t sent = send(sock, bounceBuffer, message->protocol.size, 0); sent < 0) {
+                            std::cerr << "Error writing to socket" << std::endl;
+                            exit(-1);
+                        }
                     }
                 }
-
             }
 
 
