@@ -65,8 +65,10 @@ void runClient(const Settings &settings) {
 
             bool doneHopping = false;
             for (int messageCount = 0; messageCount < settings.count && running && !doneHopping; messageCount++) {
-                unsigned char buffer[settings.size];
-                std::fill_n(buffer, settings.size, 255);
+                std::vector<unsigned char> buffer(settings.size, 255);
+                unsigned char* ptr = buffer.data();
+
+                std::fill_n(ptr, settings.size, 255);
 
                 sockaddr_in local{};
                 socklen_t localLength = sizeof(local);
@@ -80,13 +82,13 @@ void runClient(const Settings &settings) {
                     std::chrono::system_clock::now().time_since_epoch()).count();
 
                 int index = 0;
-                std::memcpy(buffer + index, &settings.size, 4);
+                std::memcpy(ptr + index, &settings.size, 4);
                 index += 4;
-                std::memcpy(buffer + index, &timestamp, 8);
+                std::memcpy(ptr + index, &timestamp, 8);
                 index += 8;
-                std::memcpy(buffer + index, &settings.hops, 1);
+                std::memcpy(ptr + index, &settings.hops, 1);
 
-                send(sock, buffer, sizeof(buffer), 0);
+                send(sock, ptr, buffer.size(), 0);
 
                 int hops = settings.hops;
 
@@ -115,22 +117,23 @@ void runClient(const Settings &settings) {
                         doneHopping = true;
                         break;
                     } else {
-                        unsigned char bounceBuffer[message->protocol.size];
-                        std::fill_n(buffer, message->protocol.size, 255);
+                        std::vector<unsigned char> bounceBuffer(settings.size, 255);
+                        unsigned char* bouncePtr = bounceBuffer.data();
+                        std::fill_n(bouncePtr, message->protocol.size, 255);
 
                         hops = message->protocol.hops;
                         hops--;
                         messageCount--;
 
                         int bounceIndex = 0;
-                        std::memcpy(bounceBuffer + bounceIndex, &message->protocol.size, 4);
+                        std::memcpy(bouncePtr + bounceIndex, &message->protocol.size, 4);
                         bounceIndex += 4;
-                        std::memcpy(bounceBuffer + bounceIndex, &message->protocol.timestamp, 8);
+                        std::memcpy(bouncePtr + bounceIndex, &message->protocol.timestamp, 8);
                         bounceIndex += 8;
-                        std::memcpy(bounceBuffer + bounceIndex, &hops, 1);
+                        std::memcpy(bouncePtr + bounceIndex, &hops, 1);
 
 
-                        if (const ssize_t sent = send(sock, bounceBuffer, message->protocol.size, 0); sent < 0) {
+                        if (const ssize_t sent = send(sock, bouncePtr, message->protocol.size, 0); sent < 0) {
                             std::cerr << "Error writing to socket" << std::endl;
                             exit(-1);
                         }

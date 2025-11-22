@@ -6,6 +6,7 @@
 #include <linux/net_tstamp.h>
 #include <netinet/in.h>
 #include <cstring>
+#include <vector>
 
 #include "signal.hpp"
 #include "utils.hpp"
@@ -76,27 +77,28 @@ void runServer(const Settings &settings) {
                 break;
             }
 
-            unsigned char buffer[message->protocol.size];
-            std::fill_n(buffer, message->protocol.size, 255);
+            std::vector<unsigned char> buffer(message->protocol.size, 255);
+            unsigned char* ptr = buffer.data();
+
 
             unsigned char hops = message->protocol.hops;
             hops--;
             int index = 0;
-            std::memcpy(buffer + index, &message->protocol.size, sizeof(message->protocol.size));
+            std::memcpy(ptr + index, &message->protocol.size, sizeof(message->protocol.size));
             index += sizeof(message->protocol.size);
 
-            std::memcpy(buffer + index, &message->protocol.timestamp, sizeof(message->protocol.timestamp));
+            std::memcpy(ptr + index, &message->protocol.timestamp, sizeof(message->protocol.timestamp));
             index += sizeof(message->protocol.timestamp);
 
-            std::memcpy(buffer + index, &hops, 1);
+            std::memcpy(ptr + index, &hops, 1);
 
             if (settings.mode == TCP) {
-                if (const ssize_t sent = send(sock, buffer, message->protocol.size, 0); sent < 0) {
+                if (const ssize_t sent = send(sock, ptr, message->protocol.size, 0); sent < 0) {
                     std::cerr << "Error writing to socket" << std::endl;
                     exit(-1);
                 }
             } else {
-                sendto(sock, buffer, message->protocol.size, 0, reinterpret_cast<const sockaddr *>(&message->sender), sizeof(message->sender));
+                sendto(sock, ptr, message->protocol.size, 0, reinterpret_cast<const sockaddr *>(&message->sender), sizeof(message->sender));
             }
         }
     }
