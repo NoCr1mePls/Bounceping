@@ -77,8 +77,6 @@ void runServer(const Settings &settings) {
                 break;
             }
 
-            std::cout << "protocol.size = " << message->protocol.size << std::endl;
-
             std::vector<unsigned char> buffer(message->protocol.size, 255);
             unsigned char* ptr = buffer.data();
 
@@ -102,6 +100,8 @@ void runServer(const Settings &settings) {
             } else {
                 sendto(sock, ptr, message->protocol.size, 0, reinterpret_cast<const sockaddr *>(&message->sender), sizeof(message->sender));
             }
+
+            clearSocket(sock);
         }
     }
 }

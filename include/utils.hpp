@@ -12,3 +12,4 @@ bool validateIpAddress(const std::string& ipAddress);
 std::optional<int> setupThread(const pthread_t& thread);
 bool lockMemory();
 std::optional<Message> recvMessage(const int& sock);
+void clearSocket(int sock);

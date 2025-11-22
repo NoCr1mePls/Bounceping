@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/mman.h>
+#include <fcntl.h>
 
 #include "protocol.hpp"
 #include "signal.hpp"
@@ -104,4 +105,16 @@ std::optional<Message> recvMessage(const int& sock) {
     message.sender = sender;
 
     return message;
+}
+
+void clearSocket(const int sock) {
+    const int flags = fcntl(sock, F_GETFL, 0);
+    fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+
+    char buf[1024];
+
+    while (recv(sock, buf, sizeof(buf), 0) > 0) {
+    }
+
+    fcntl(sock, F_SETFL, flags);
 }
