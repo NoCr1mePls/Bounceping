@@ -68,7 +68,7 @@ bool lockMemory() {
 }
 
 std::optional<Message> recvMessage(const int& sock) {
-    unsigned char buffer[13];
+    unsigned char buffer[1500];
 
     sockaddr_in sender{};
     socklen_t senderLength = sizeof(sender);
