@@ -67,7 +67,7 @@ std::optional<int> getCommandLineOptions(Settings &settings, const int argc, cha
                 break;
             }
             case 's': {
-                if (const int size = safeStoi(optarg); size > 100) {
+                if (const int size = safeStoi(optarg); size >= 13) {
                     settings.size = size;
                 } else {
                     std::cerr << optarg << " is not a valid size" << std::endl;
