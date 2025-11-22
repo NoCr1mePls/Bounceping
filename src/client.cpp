@@ -65,7 +65,7 @@ void runClient(const Settings &settings) {
 
             bool doneHopping = false;
             for (int messageCount = 0; messageCount < settings.count && running && !doneHopping; messageCount++) {
-                unsigned char buffer[sizeof(Protocol)];
+                unsigned char buffer[settings.size];
                 std::fill_n(buffer, settings.size, 255);
 
                 sockaddr_in local{};
