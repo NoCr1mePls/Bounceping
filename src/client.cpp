@@ -68,8 +68,6 @@ void runClient(const Settings &settings) {
                 std::vector<unsigned char> buffer(settings.size, 255);
                 unsigned char* ptr = buffer.data();
 
-                std::fill_n(ptr, settings.size, 255);
-
                 sockaddr_in local{};
                 socklen_t localLength = sizeof(local);
                 getsockname(sock, reinterpret_cast<sockaddr *>(&local), &localLength);

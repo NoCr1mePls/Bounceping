@@ -92,6 +92,8 @@ void runServer(const Settings &settings) {
 
             std::memcpy(ptr + index, &hops, 1);
 
+            clearSocket(sock);
+
             if (settings.mode == TCP) {
                 if (const ssize_t sent = send(sock, ptr, message->protocol.size, 0); sent < 0) {
                     std::cerr << "Error writing to socket" << std::endl;
@@ -100,8 +102,6 @@ void runServer(const Settings &settings) {
             } else {
                 sendto(sock, ptr, message->protocol.size, 0, reinterpret_cast<const sockaddr *>(&message->sender), sizeof(message->sender));
             }
-
-            clearSocket(sock);
         }
     }
 }
