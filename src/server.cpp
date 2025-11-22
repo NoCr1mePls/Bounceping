@@ -77,6 +77,8 @@ void runServer(const Settings &settings) {
                 break;
             }
 
+            std::cout << "protocol.size = " << message->protocol.size << std::endl;
+
             std::vector<unsigned char> buffer(message->protocol.size, 255);
             unsigned char* ptr = buffer.data();
 

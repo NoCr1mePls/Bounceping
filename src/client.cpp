@@ -119,7 +119,6 @@ void runClient(const Settings &settings) {
                     } else {
                         std::vector<unsigned char> bounceBuffer(settings.size, 255);
                         unsigned char* bouncePtr = bounceBuffer.data();
-                        std::fill_n(bouncePtr, message->protocol.size, 255);
 
                         hops = message->protocol.hops;
                         hops--;
