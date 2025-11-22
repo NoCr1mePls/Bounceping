@@ -93,7 +93,7 @@ void runServer(const Settings &settings) {
             std::memcpy(ptr + index, &hops, 1);
 
             clearSocket(sock);
-
+            std::cout << hops << std::endl;
             if (settings.mode == TCP) {
                 if (const ssize_t sent = send(sock, ptr, message->protocol.size, 0); sent < 0) {
                     std::cerr << "Error writing to socket" << std::endl;
