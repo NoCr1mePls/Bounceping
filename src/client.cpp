@@ -112,7 +112,6 @@ void runClient(const Settings &settings) {
                         if (outputFile.has_value()) {
                             *outputFile << "Message received. Current batchtime: " << batchTime << "us" << std::endl;
                         }
-                        doneHopping = true;
                         break;
                     } else {
                         std::vector<unsigned char> bounceBuffer(settings.size, 255);
